@@ -1,0 +1,44 @@
+{
+  "name": "azure",
+  "version": "1.0.0",
+  "author": "nabarvn",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "prestart": "npm run build",
+    "start": "func start",
+    "test": "echo \"No tests yet...\"",
+    "clear-redis:usage": "ts-node scripts/clear-redis.ts usage",
+    "clear-redis:rate": "ts-node scripts/clear-redis.ts rate",
+    "clear-redis:all": "ts-node scripts/clear-redis.ts all"
+  },
+  "keywords": [
+    "ai",
+    "image-generator",
+    "text-to-image",
+    "dall-e",
+    "generative-ai",
+    "prompt-engineering",
+    "context-engineering",
+    "azure",
+    "serverless",
+    "azure-functions",
+    "azure-blob-storage"
+  ],
+  "dependencies": {
+    "@azure/functions": "^4.2.0",
+    "@azure/storage-blob": "^12.17.0",
+    "@upstash/ratelimit": "^1.0.0",
+    "@upstash/redis": "^1.24.0",
+    "axios": "^1.6.0",
+    "openai": "^4.12.1",
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "@types/node": "18.18.8",
+    "@types/sharp": "^0.32.0",
+    "ts-node": "^10.9.2",
+    "typescript": "5.2.2"
+  },
+  "main": "dist/src/functions/*.js"
+}
