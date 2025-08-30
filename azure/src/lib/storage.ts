@@ -6,6 +6,12 @@ import {
 const accountName = process.env.STORAGE_ACCOUNT_NAME;
 const accountKey = process.env.STORAGE_ACCOUNT_KEY;
 
+if (!accountName || !accountKey) {
+  throw new Error(
+    "Azure Storage account name and key must be provided in environment variables.",
+  );
+}
+
 export const containerName = "images";
 
 export const sharedKeyCredential = new StorageSharedKeyCredential(
