@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "author": "nabarvn",
   "scripts": {
-    "build": "tsc",
+    "build": "rimraf dist && tsc",
     "watch": "tsc -w",
     "prestart": "npm run build",
     "start": "func start",
@@ -37,6 +37,7 @@
   "devDependencies": {
     "@types/node": "18.18.8",
     "@types/sharp": "^0.32.0",
+    "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "typescript": "5.2.2"
   },
