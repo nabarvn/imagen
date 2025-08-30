@@ -231,7 +231,7 @@ export async function createImage(
       size: CONSTANTS.IMAGE_SIZE,
     });
 
-    const imageUrl = response.data[0].url;
+    const imageUrl = response.data?.[0]?.url;
 
     if (!imageUrl) {
       throw new Error("Image URL not returned from OpenAI");
@@ -322,7 +322,10 @@ export async function createImage(
       };
     }
   } catch (error) {
-    if (error.message === `${CONSTANTS.INSUFFICIENT_DETAIL_KEY}`) {
+    if (
+      error instanceof Error &&
+      error.message === `${CONSTANTS.INSUFFICIENT_DETAIL_KEY}`
+    ) {
       return {
         status: 400,
         jsonBody: {
