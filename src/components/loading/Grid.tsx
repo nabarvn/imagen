@@ -21,6 +21,7 @@ const Grid = () => {
             key={`skeleton-${item.id}`}
             isFirst={item.isFirst}
             delay={item.delay}
+            alt=""
           />
         ))}
       </div>
