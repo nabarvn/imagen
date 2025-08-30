@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 type ImageProps = {
   isFirst: boolean;
   delay?: number;
+  alt?: string;
 };
 
 const Image = ({ isFirst, delay = 0 }: ImageProps) => {
