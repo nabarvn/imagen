@@ -2,6 +2,7 @@
   "name": "azure",
   "version": "1.0.0",
   "author": "nabarvn",
+  "main": "dist/src/index.js",
   "scripts": {
     "build": "rimraf dist && tsc",
     "watch": "tsc -w",
@@ -36,10 +37,8 @@
   },
   "devDependencies": {
     "@types/node": "18.18.8",
-    "@types/sharp": "^0.32.0",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "typescript": "5.2.2"
-  },
-  "main": "dist/src/functions/*.js"
+  }
 }
