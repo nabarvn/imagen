@@ -23,6 +23,9 @@
     "azure-functions",
     "azure-blob-storage"
   ],
+  "engines": {
+    "node": "20.14.0"
+  },
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^4.2.1",
     "@heroicons/react": "^2.0.18",
@@ -36,7 +39,7 @@
   },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.2",
-    "@types/node": "18.18.8",
+    "@types/node": "20.19.27",
     "@types/react": "18.2.20",
     "@types/react-dom": "18.2.7",
     "autoprefixer": "^10.4.15",
