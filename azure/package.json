@@ -26,6 +26,9 @@
     "azure-functions",
     "azure-blob-storage"
   ],
+  "engines": {
+    "node": "20.14.0"
+  },
   "dependencies": {
     "@azure/functions": "^4.2.0",
     "@azure/storage-blob": "^12.17.0",
@@ -36,7 +39,7 @@
     "sharp": "^0.33.5"
   },
   "devDependencies": {
-    "@types/node": "18.18.8",
+    "@types/node": "20.19.27",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "typescript": "5.2.2"
