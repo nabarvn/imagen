@@ -24,7 +24,7 @@
     "azure-blob-storage"
   ],
   "engines": {
-    "node": "20.14.0"
+    "node": "^20.14.0"
   },
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^4.2.1",

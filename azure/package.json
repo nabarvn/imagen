@@ -27,7 +27,7 @@
     "azure-blob-storage"
   ],
   "engines": {
-    "node": "20.14.0"
+    "node": "^20.14.0"
   },
   "dependencies": {
     "@azure/functions": "^4.2.0",
