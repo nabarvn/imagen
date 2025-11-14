@@ -55,7 +55,7 @@ This project is split into two main parts: a Next.js frontend and an Azure Funct
 
 This setup requires:
 
-- [Node.js](https://nodejs.org/en) v20.14.0+
+- [Node.js](https://nodejs.org/en) v20.14.0 ([nvm](https://github.com/nvm-sh/nvm) recommended)
 - [Visual Studio Code](https://code.visualstudio.com/)
 - [Azure Functions Core Tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local) v4+ (can be installed via `npm install -g azure-functions-core-tools@4`)
 - [Azure Functions for VS Code extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions)
@@ -114,6 +114,8 @@ The frontend needs to connect to your local backend and know the hostname of you
 ### 4. Installing Dependencies
 
 You will need two separate terminals to install dependencies for both the frontend and backend.
+
+> **Note:** Run `nvm use` in the project root to switch to the compatible Node.js version (v20.14.0) before installing dependencies.
 
 - **Terminal 1 (Root Directory):** Install frontend dependencies.
 
