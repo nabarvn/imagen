@@ -13,7 +13,7 @@
     "ai",
     "image-generator",
     "text-to-image",
-    "dall-e",
+    "gpt-image",
     "generative-ai",
     "prompt-engineering",
     "context-engineering",
@@ -24,7 +24,7 @@
     "azure-blob-storage"
   ],
   "engines": {
-    "node": "^20.14.0"
+    "node": "^24.11.1"
   },
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^4.2.1",
@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.2",
-    "@types/node": "20.19.27",
+    "@types/node": "24.11.1",
     "@types/react": "18.2.20",
     "@types/react-dom": "18.2.7",
     "autoprefixer": "^10.4.15",
