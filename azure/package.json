@@ -17,7 +17,7 @@
     "ai",
     "image-generator",
     "text-to-image",
-    "dall-e",
+    "gpt-image",
     "generative-ai",
     "prompt-engineering",
     "context-engineering",
@@ -27,19 +27,18 @@
     "azure-blob-storage"
   ],
   "engines": {
-    "node": "^20.14.0"
+    "node": "^24.11.1"
   },
   "dependencies": {
     "@azure/functions": "^4.2.0",
     "@azure/storage-blob": "^12.17.0",
     "@upstash/ratelimit": "^1.0.0",
     "@upstash/redis": "^1.24.0",
-    "axios": "^1.6.0",
     "openai": "^4.12.1",
     "sharp": "^0.33.5"
   },
   "devDependencies": {
-    "@types/node": "20.19.27",
+    "@types/node": "24.11.1",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "typescript": "5.2.2"
