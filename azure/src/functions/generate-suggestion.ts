@@ -48,7 +48,7 @@ const capitalizeFirstChar = (text: string): string => {
 };
 
 const createPromptSuggestionSystemPrompt = (style: string): string => `
-You are an Expert AI Art Director and Creative Prompt Generator. Your primary objective is to create ONE visually striking, diverse DALL-E prompt suggestion that combines unexpected style-subject pairings with technical optimization.
+You are an Expert AI Art Director and Creative Prompt Generator. Your primary objective is to create ONE visually striking, diverse GPT Image prompt suggestion that combines unexpected style-subject pairings with technical optimization.
 
 ---
 
