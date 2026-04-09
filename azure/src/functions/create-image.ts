@@ -5,7 +5,6 @@ import {
   InvocationContext,
 } from "@azure/functions";
 
-import axios from "axios";
 import { redis } from "../lib/redis";
 import { openai } from "../lib/openai";
 import { containerClient } from "../lib/storage";
@@ -20,8 +19,9 @@ import {
 
 const CONSTANTS = {
   OPENAI_GPT_MODEL: "gpt-4.1-nano",
-  OPENAI_IMAGE_MODEL: "dall-e-3",
+  OPENAI_IMAGE_MODEL: "gpt-image-2",
   IMAGE_SIZE: "1024x1024" as const,
+  IMAGE_QUALITY: "medium" as const,
   INSUFFICIENT_DETAIL_KEY: "insufficient_detail",
   MAX_COMPLETION_TOKENS: 50,
   TEMPERATURE: 0.7,
@@ -31,16 +31,16 @@ const CONSTANTS = {
 };
 
 const UserPromptOptimizerPrompt = `
-You are an Expert DALL-E Prompt Optimizer. Your primary objective is to transform user prompts into visually-rich, AI-optimized descriptions that maximize DALL-E's image generation quality while staying under ${CONSTANTS.MAX_COMPLETION_TOKENS} tokens.
+You are an Expert GPT Image Prompt Optimizer. Your primary objective is to transform user prompts into visually-rich, AI-optimized descriptions that maximize GPT Image generation quality while staying under ${CONSTANTS.MAX_COMPLETION_TOKENS} tokens.
 
 ---
 
 ### MASTER INSTRUCTIONS
 
 #### 1. Core Mission
-- **Enhance Visual Clarity:** Convert vague descriptions into specific, detailed visual elements that DALL-E can accurately interpret.
+- **Enhance Visual Clarity:** Convert vague descriptions into specific, detailed visual elements that GPT Image can accurately interpret.
 - **Inject Strategic Details:** Add lighting, composition, materials, and artistic style without overwhelming the original concept.
-- **Optimize for AI:** Include proven DALL-E performance keywords and technical qualifiers that improve output quality.
+- **Optimize for AI:** Include proven performance keywords and technical qualifiers that improve output quality.
 - **Preserve Intent:** Maintain the user's creative vision while strategically enhancing it for better results.
 
 #### 2. The "${CONSTANTS.INSUFFICIENT_DETAIL_KEY}" Rule
@@ -222,19 +222,20 @@ export async function createImage(
       context,
     );
 
-    context.log("🎨 Generating image with DALL-E...");
+    context.log("🎨 Generating image with GPT Image...");
 
     const response = await openai.images.generate({
       model: CONSTANTS.OPENAI_IMAGE_MODEL,
       prompt: optimizedPrompt,
       n: 1,
       size: CONSTANTS.IMAGE_SIZE,
+      quality: CONSTANTS.IMAGE_QUALITY,
     });
 
-    const imageUrl = response.data?.[0]?.url;
+    const imageBase64 = response.data?.[0]?.b64_json;
 
-    if (!imageUrl) {
-      throw new Error("Image URL not returned from OpenAI");
+    if (!imageBase64) {
+      throw new Error("Image data not returned from OpenAI");
     }
 
     /* 
@@ -242,13 +243,9 @@ export async function createImage(
     */
     await incrementUsageCounter(request);
 
-    context.log("📥 Downloading image from OpenAI...");
+    context.log("📥 Decoding image from OpenAI...");
 
-    const imageResponse = await axios.get(imageUrl, {
-      responseType: "arraybuffer",
-    });
-
-    const originalBuffer = Buffer.from(imageResponse.data);
+    const originalBuffer = Buffer.from(imageBase64, "base64");
 
     context.log(
       `📊 Original image size: ${(originalBuffer.length / 1024 / 1024).toFixed(
