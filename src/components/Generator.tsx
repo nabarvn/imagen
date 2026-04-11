@@ -68,7 +68,7 @@ const Generator = () => {
     const rawPrompt = useSuggestion ? suggestion : customPrompt;
 
     const notification = toast.loading(
-      "DALL-E is generating an image for you...",
+      "Generating an image for you...",
     );
 
     setInput("");
