@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 
 export function constructMetadata({
-  title = "Imagen - Bring Your Imagination to Life with DALL-E",
+  title = "Imagen - Bring Your Imagination to Life with GPT Image",
   description = "Effortlessly transform your ideas into captivating visual art with our intuitive AI image generator.",
   image = "/thumbnail.png",
   icons = [
