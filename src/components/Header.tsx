@@ -28,8 +28,7 @@ const Header = () => {
               </h1>
 
               <p className="text-xs font-medium text-gray-500">
-                Powered by <span className="text-violet-600">DALL-E</span>,{" "}
-                <span className="text-violet-600">GPT</span> &{" "}
+                Powered by <span className="text-violet-600">GPT</span> &{" "}
                 <span className="text-violet-600">Azure</span>
               </p>
             </div>
