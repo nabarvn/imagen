@@ -25,7 +25,7 @@
 
 <br />
 
-Ever wanted to create a picture just by describing it? That's what Imagen does. Just type out your idea, and DALL-E will generate an image for you. If you're drawing a blank, don't worry – you can use our intelligent prompt suggestions to get some inspiration and see what you can create.
+Ever wanted to create a picture just by describing it? That's what Imagen does. Just type out your idea, and GPT Image will generate an image for you. If you're drawing a blank, don't worry – you can use our intelligent prompt suggestions to get some inspiration and see what you can create.
 
 ## Architecture
 
@@ -36,7 +36,7 @@ graph TD
     User --> Frontend[Next.js Frontend];
     Frontend -- "API Requests" --> Backend[Azure Functions];
     Backend -- "Rate Limiting & Caching" --> Redis[Upstash Redis];
-    Backend -- "AI Models (DALL-E & GPT)" --> OpenAI[OpenAI API];
+    Backend -- "AI Models (GPT)" --> OpenAI[OpenAI API];
     Backend -- "Image Upload" --> Storage[Azure Blob Storage];
     Storage -- "Serves Images" --> Frontend;
 
@@ -55,7 +55,7 @@ This project is split into two main parts: a Next.js frontend and an Azure Funct
 
 This setup requires:
 
-- [Node.js](https://nodejs.org/en) v20.14.0 ([nvm](https://github.com/nvm-sh/nvm) recommended)
+- [Node.js](https://nodejs.org/en) v24.11.1 ([nvm](https://github.com/nvm-sh/nvm) recommended)
 - [Visual Studio Code](https://code.visualstudio.com/)
 - [Azure Functions Core Tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local) v4+ (can be installed via `npm install -g azure-functions-core-tools@4`)
 - [Azure Functions for VS Code extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions)
@@ -79,7 +79,7 @@ The backend is powered by Azure Functions. We will use the VS Code extension to 
 2.  **Create Azure Resources**:
 
     - In the VS Code command palette, run **`Azure Functions: Create Function App in Azure...`**.
-    - The extension will guide you. Choose a unique name, select **`Node.js 20`** as the runtime, and pick a geographical region.
+    - The extension will guide you. Choose a unique name, select **`Node.js 24`** as the runtime, and pick a geographical region.
     - Crucially, when prompted, choose to **`+ Create new storage account`** and **`+ Create new resource group`**. This ensures everything is linked automatically.
 
 3.  **Download Cloud Settings**:
@@ -115,7 +115,7 @@ The frontend needs to connect to your local backend and know the hostname of you
 
 You will need two separate terminals to install dependencies for both the frontend and backend.
 
-> **Note:** Run `nvm use` in the project root to switch to the compatible Node.js version (v20.14.0) before installing dependencies.
+> **Note:** Run `nvm use` in the project root to switch to the compatible Node.js version (v24.11.1) before installing dependencies.
 
 - **Terminal 1 (Root Directory):** Install frontend dependencies.
 
