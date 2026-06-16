@@ -30,7 +30,7 @@
     "node": "^24.11.1"
   },
   "dependencies": {
-    "@azure/functions": "^4.2.0",
+    "@azure/functions": "^4.16.2",
     "@azure/storage-blob": "^12.17.0",
     "@upstash/ratelimit": "^1.0.0",
     "@upstash/redis": "^1.24.0",
