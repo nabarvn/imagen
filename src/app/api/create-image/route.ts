@@ -10,7 +10,8 @@ interface GenerateImageRequest {
 */
 const X_FINGERPRINT_HEADER = "X-Fingerprint";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
+export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
   if (!process.env.FUNCTION_APP_URL) {
