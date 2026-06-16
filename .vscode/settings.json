@@ -1,6 +1,6 @@
 {
   "azureFunctions.deploySubpath": "azure",
-  "azureFunctions.scmDoBuildDuringDeployment": false,
+  "azureFunctions.scmDoBuildDuringDeployment": true,
   "azureFunctions.postDeployTask": "npm install (functions)",
   "js/ts.tsdk.path": "node_modules/typescript/lib",
   "js/ts.tsdk.promptToUseWorkspaceVersion": true,
