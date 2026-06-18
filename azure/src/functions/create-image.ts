@@ -21,7 +21,7 @@ const CONSTANTS = {
   OPENAI_GPT_MODEL: "gpt-4.1-nano",
   OPENAI_IMAGE_MODEL: "gpt-image-2",
   IMAGE_SIZE: "1024x1024" as const,
-  IMAGE_QUALITY: "medium" as const,
+  IMAGE_QUALITY: "low" as const,
   INSUFFICIENT_DETAIL_KEY: "insufficient_detail",
   MAX_COMPLETION_TOKENS: 50,
   TEMPERATURE: 0.7,
