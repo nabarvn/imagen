@@ -51,7 +51,22 @@ export async function POST(request: NextRequest) {
       cache: "no-store",
     });
 
-    const jsonResponse = await response.json();
+    const contentType = response.headers.get("content-type") ?? "";
+    const responseBody = await response.text();
+
+    if (!contentType.includes("application/json")) {
+      console.error(
+        `Generate image API returned ${response.status} ${contentType}:`,
+        responseBody.slice(0, 300),
+      );
+
+      return NextResponse.json(
+        { error: "The image generation service returned an invalid response." },
+        { status: response.ok ? 502 : response.status },
+      );
+    }
+
+    const jsonResponse = JSON.parse(responseBody);
     return NextResponse.json(jsonResponse, { status: response.status });
   } catch (error) {
     console.error("Error calling the generate image API:", error);
