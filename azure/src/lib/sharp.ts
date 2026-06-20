@@ -1,26 +1,5 @@
 import sharp from "sharp";
-
-export interface ImageSize {
-  width: number;
-  suffix: string;
-  quality: number;
-  format: "webp" | "png" | "jpeg";
-}
-
-export const IMAGE_SIZES: ImageSize[] = [
-  { width: 400, suffix: "_small", quality: 80, format: "webp" }, // ~30-50KB - Mobile
-  { width: 800, suffix: "_medium", quality: 85, format: "webp" }, // ~80-150KB - Tablet
-  { width: 1200, suffix: "_large", quality: 85, format: "webp" }, // ~150-300KB - Desktop
-  { width: 1920, suffix: "_xlarge", quality: 90, format: "webp" }, // ~300-600KB - Large displays
-];
-
-export interface ProcessedImage {
-  buffer: Buffer;
-  filename: string;
-  size: ImageSize;
-  originalWidth: number;
-  originalHeight: number;
-}
+import { IMAGE_SIZES, type ProcessedImage } from "./rendition";
 
 export class ImageProcessor {
   /*
