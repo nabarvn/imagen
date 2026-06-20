@@ -5,7 +5,8 @@ import { NextResponse, type NextRequest } from "next/server";
 */
 const X_FINGERPRINT_HEADER = "X-Fingerprint";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
+export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {
   if (!process.env.FUNCTION_APP_URL) {
