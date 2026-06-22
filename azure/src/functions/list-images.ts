@@ -6,8 +6,8 @@ import {
 } from "@azure/functions";
 
 import { redis } from "../lib/redis";
-import { IMAGE_SIZES } from "../lib/sharp";
 import { getSASToken } from "../lib/sas-token";
+import { IMAGE_SIZES } from "../lib/rendition";
 import { containerClient } from "../lib/storage";
 import { applyRateLimiter, rateLimiter } from "../lib/rate-limiter";
 
