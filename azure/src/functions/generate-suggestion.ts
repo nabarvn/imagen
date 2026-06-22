@@ -5,7 +5,7 @@ import {
   InvocationContext,
 } from "@azure/functions";
 
-import { openai } from "../lib/openai";
+import { getOpenAI } from "../lib/lazy";
 import { applyRateLimiter, rateLimiter } from "../lib/rate-limiter";
 
 const CONSTANTS = {
@@ -91,6 +91,7 @@ async function generatePromptSuggestion(
   );
 
   const systemPrompt = createPromptSuggestionSystemPrompt(selectedStyle);
+  const openai = await getOpenAI();
 
   const response = await openai.chat.completions.create({
     model: CONSTANTS.OPENAI_MODEL,
