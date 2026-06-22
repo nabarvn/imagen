@@ -6,9 +6,9 @@ import {
 } from "@azure/functions";
 
 import { redis } from "../lib/redis";
-import { openai } from "../lib/openai";
 import { containerClient } from "../lib/storage";
-import { ImageProcessor, ProcessedImage } from "../lib/sharp";
+import type { ProcessedImage } from "../lib/rendition";
+import { getOpenAI, getImageProcessor } from "../lib/lazy";
 
 import {
   applyRateLimiter,
@@ -104,6 +104,8 @@ async function getOptimizedPrompt(
   }
 
   context.log("🚀 Optimizing user prompt...");
+
+  const openai = await getOpenAI();
 
   const chatCompletion = await openai.chat.completions.create({
     model: CONSTANTS.OPENAI_GPT_MODEL,
@@ -224,6 +226,8 @@ export async function createImage(
 
     context.log("🎨 Generating image with GPT Image...");
 
+    const openai = await getOpenAI();
+
     const response = await openai.images.generate({
       model: CONSTANTS.OPENAI_IMAGE_MODEL,
       prompt: optimizedPrompt,
@@ -261,6 +265,8 @@ export async function createImage(
     let processedImages: ProcessedImage[] = [];
 
     try {
+      const ImageProcessor = await getImageProcessor();
+
       processedImages = await ImageProcessor.processImage(
         originalBuffer,
         baseImageFileName,
