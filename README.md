@@ -79,7 +79,7 @@ The backend is powered by Azure Functions. We will use the VS Code extension to 
 2.  **Create Azure Resources**:
 
     - In the VS Code command palette, run **`Azure Functions: Create Function App in Azure...`**.
-    - The extension will guide you. Choose a unique name, select **`Node.js 24`** as the runtime, and pick a geographical region.
+    - Choose a unique name, **Windows Consumption (Y1)**, **Node.js 24**, a 64-bit platform, and a geographical region.
     - Crucially, when prompted, choose to **`+ Create new storage account`** and **`+ Create new resource group`**. This ensures everything is linked automatically.
 
 3.  **Download Cloud Settings**:
@@ -153,12 +153,20 @@ Once the services are running, you can access them at the following URLs:
 
 ## Deployment
 
-Once you have tested the application locally, you can deploy the backend to Azure.
+The backend is deployed by `.github/workflows/deploy-functions.yml`. It builds on Windows so native dependencies such as `sharp` match the Windows Function App. Do not deploy the backend directly from VS Code.
 
-1.  In VS Code, right-click the `azure` project folder.
-2.  Select **`Deploy to Function App...`**.
-3.  Choose the Function App you created during the setup process.
-4.  A prompt should appear asking if you want to upload your settings. Click **`Upload`** to synchronize the API keys from your `local.settings.json` file to the cloud. This is a critical step.
+1. In the Azure portal, configure the Function App:
+   - Set `WEBSITE_RUN_FROM_PACKAGE` to `1`.
+   - Set `SCM_DO_BUILD_DURING_DEPLOYMENT` to `false`.
+   - Confirm the platform is 64-bit.
+   - Add the API keys from `azure/local.settings.json`. This file is gitignored and is not uploaded by GitHub.
+2. Download the Function App's publish profile from its Azure portal overview.
+3. In the GitHub repository, add these **Actions repository secrets**:
+   - `AZURE_FUNCTIONAPP_NAME`: the exact Function App name.
+   - `AZURE_FUNCTIONAPP_PUBLISH_PROFILE`: the complete publish-profile XML.
+4. Push a backend change to `main`, or run **Deploy Azure Functions** manually from the GitHub Actions tab.
+
+After the workflow succeeds, Azure mounts the new package and restarts the Function App automatically.
 
 Your API is now live! The frontend, when deployed to a service like Vercel, will need its `FUNCTION_APP_URL` environment variable updated to point to your new Azure Function App URL.
 
