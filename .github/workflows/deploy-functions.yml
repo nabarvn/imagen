@@ -1,0 +1,47 @@
+name: Deploy Azure Functions
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "azure/**"
+      - ".github/workflows/deploy-functions.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        working-directory: azure
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.11.1
+          cache: npm
+          cache-dependency-path: azure/package-lock.json
+
+      - name: Build production package
+        run: |
+          npm ci
+          npm run build
+          npm prune --omit=dev
+
+      - name: Deploy function app
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ secrets.AZURE_FUNCTIONAPP_NAME }}
+          package: azure
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+          respect-funcignore: true
+          remote-build: false
