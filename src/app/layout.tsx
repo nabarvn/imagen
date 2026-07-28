@@ -7,7 +7,7 @@ export const metadata: Metadata = constructMetadata();
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <html lang="en">
+    <html lang="en" className="overscroll-y-none">
       <body>
         <Providers>
           <Header />
