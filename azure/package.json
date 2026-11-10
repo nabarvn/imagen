@@ -34,7 +34,7 @@
     "@azure/storage-blob": "^12.17.0",
     "@upstash/ratelimit": "^1.0.0",
     "@upstash/redis": "^1.24.0",
-    "openai": "^5.23.2",
+    "openai": "7.32.0",
     "sharp": "^0.33.5"
   },
   "devDependencies": {
