@@ -3,6 +3,10 @@
 @import "tailwindcss/utilities";
 
 @layer base {
+  html {
+    color-scheme: only light;
+  }
+
   body {
     @apply scrollbar-thin scrollbar-track-violet-300 scrollbar-thumb-violet-500;
   }
