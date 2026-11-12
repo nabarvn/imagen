@@ -4,6 +4,9 @@ module.exports = {
   content: ["./src/app/**/*.{ts,tsx}", "./src/components/**/*.{ts,tsx}"],
   theme: {
     extend: {
+      cursor: {
+        prompt: 'url("/quote.svg") 10 2, default',
+      },
       animation: {
         shimmer: "shimmer 2s ease-in-out infinite",
       },
