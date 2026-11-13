@@ -6,7 +6,7 @@ const DAILY_USAGE_LIMIT = 2;
 
 export const rateLimiter = new Ratelimit({
   redis,
-  limiter: Ratelimit.slidingWindow(25, "60 s"),
+  limiter: Ratelimit.slidingWindow(10, "60 s"),
   prefix: "@upstash/ratelimit",
   ephemeralCache: false,
 });
