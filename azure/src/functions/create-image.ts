@@ -5,9 +5,9 @@ import {
   InvocationContext,
 } from "@azure/functions";
 
-import { redis } from "../lib/redis";
 import { containerClient } from "../lib/storage";
 import type { ProcessedImage } from "../lib/rendition";
+import { invalidateImageListCache } from "../lib/catalog";
 import { getOpenAI, getImageProcessor } from "../lib/lazy";
 
 import {
@@ -18,33 +18,28 @@ import {
 } from "../lib/rate-limiter";
 
 const CONSTANTS = {
-  OPENAI_GPT_MODEL: "gpt-4.1-nano",
-  OPENAI_IMAGE_MODEL: "gpt-image-2",
+  OPENAI_GPT_MODEL: "gpt-6-luna",
+  OPENAI_IMAGE_MODEL: "gpt-image-2.6-flare",
   IMAGE_SIZE: "1024x1024" as const,
   IMAGE_QUALITY: "low" as const,
   INSUFFICIENT_DETAIL_KEY: "insufficient_detail",
-  MAX_COMPLETION_TOKENS: 50,
-  TEMPERATURE: 0.7,
+  MAX_COMPLETION_TOKENS: 1000,
   SIX_HOURS_IN_SECONDS: 6 * 60 * 60,
   CACHE_CONTROL_HEADER: "public, max-age=31536000", // 1 year
-  IMAGE_CACHE_KEY: "images:all",
 };
 
 const UserPromptOptimizerPrompt = `
-You are an Expert GPT Image Prompt Optimizer. Your primary objective is to transform user prompts into visually-rich, AI-optimized descriptions that maximize GPT Image generation quality while staying under ${CONSTANTS.MAX_COMPLETION_TOKENS} tokens.
+You are an Expert GPT Image Prompt Optimizer. Your primary objective is to transform user prompts into visually-rich, AI-optimized descriptions that maximize GPT Image generation quality.
 
 ---
 
 ### MASTER INSTRUCTIONS
 
-#### 1. Core Mission
+#### Core Mission
 - **Enhance Visual Clarity:** Convert vague descriptions into specific, detailed visual elements that GPT Image can accurately interpret.
 - **Inject Strategic Details:** Add lighting, composition, materials, and artistic style without overwhelming the original concept.
 - **Optimize for AI:** Include proven performance keywords and technical qualifiers that improve output quality.
 - **Preserve Intent:** Maintain the user's creative vision while strategically enhancing it for better results.
-
-#### 2. The "${CONSTANTS.INSUFFICIENT_DETAIL_KEY}" Rule
-If the user's input is too vague or minimal to optimize meaningfully (e.g., "cat", "car"), you MUST respond with the exact string \`${CONSTANTS.INSUFFICIENT_DETAIL_KEY}\`.
 
 ---
 
@@ -53,31 +48,31 @@ If the user's input is too vague or minimal to optimize meaningfully (e.g., "cat
 **Structure:** [Main Subject] + [Key Visual Details] + [Style/Medium] + [Quality Enhancers]
 
 **Essential Elements:**
-- Specific colors, lighting, and composition
+- Hard cap of 25 words maximum
+- Format as a single flowing, comma-separated prompt (NO quotation marks, NO colons, NO semicolons)
+- Include specific visual details: lighting, distinct color palette, composition, mood
 - Artistic style or medium when beneficial
-- Technical quality descriptors: "detailed", "high resolution", "professional"
-- Power words that maximize visual impact per token
+- End with 2 quality enhancers chosen from: "detailed", "vibrant", "cinematic", "professional", "high resolution"
+- Ensure diverse representation when featuring people
 
 ---
 
 ### --- GOLDEN EXAMPLES ---
 
 1. **User Input:** "A dog playing in a park"
-   **Optimized Output:** "Golden retriever playing fetch in sunny park, green grass, natural lighting, shallow depth of field, detailed, photorealistic"
+   **Optimized Output:** "Golden retriever catching a red frisbee in a sunlit meadow, emerald and amber tones, dynamic low-angle composition, joyful mood, photorealistic photography, vibrant, high resolution"
 
 2. **User Input:** "Futuristic city"
-   **Optimized Output:** "Futuristic cyberpunk city skyline, neon lights, glass towers, purple and blue lighting, night scene, detailed digital art, high resolution"
+   **Optimized Output:** "Futuristic cyberpunk city skyline with glass towers, neon magenta and cyan reflections on wet streets, wide aerial composition, mysterious mood, digital art, cinematic, detailed"
 
 3. **User Input:** "Woman portrait"
-   **Optimized Output:** "Professional portrait of woman, soft natural lighting, warm tones, studio photography, detailed, high resolution, elegant composition"
-
-4. **User Input:** "Car"
-   **Optimized Output:** "${CONSTANTS.INSUFFICIENT_DETAIL_KEY}"
+   **Optimized Output:** "Portrait of a South Asian woman in studio photography, soft diffused lighting, warm terracotta and gold palette, close-up framing, serene mood, professional, high resolution"
 
 ---
 
-User Prompt: {rawPrompt}
-Optimized Prompt:
+### CRITICAL OUTPUT INSTRUCTION
+
+Return ONLY the raw optimized prompt text with NO prefixes, labels, quotes, or commentary whatsoever.
 `;
 
 interface GenerateImageRequestBody {
@@ -89,7 +84,6 @@ type ContentType = "image/webp" | "image/jpeg" | "image/png";
 
 const capitalizeFirstChar = (text: string | null | undefined): string => {
   if (!text || text.length === 0) return "";
-  if (text === CONSTANTS.INSUFFICIENT_DETAIL_KEY) return text;
   return text.charAt(0).toUpperCase() + text.slice(1);
 };
 
@@ -103,34 +97,53 @@ async function getOptimizedPrompt(
     return rawPrompt;
   }
 
-  context.log("🚀 Optimizing user prompt...");
-
   const openai = await getOpenAI();
+
+  context.log("🔍 Checking prompt detail sufficiency...");
+
+  const decision = await openai.decisions.create({
+    model: CONSTANTS.OPENAI_GPT_MODEL,
+    input: rawPrompt,
+    questions: [
+      {
+        type: "predicate",
+        name: "has_sufficient_detail",
+        instructions:
+          "Does this input express a clear visual subject or scene that an AI can expand into an image (even if brief, like 'futuristic city' or 'woman portrait')? Return false ONLY if the input is a single generic noun with no context (e.g., 'car', 'cat'), purely vague filler (e.g., 'something cool', 'nice image'), gibberish, or not an image request.",
+      },
+    ],
+  });
+
+  const answer = decision.answers[0];
+
+  if (
+    !answer ||
+    answer.type === "refusal" ||
+    (answer.type === "predicate" && answer.probability < 0.3)
+  ) {
+    context.log(
+      `❌ Prompt deemed insufficient for optimization: "${rawPrompt}"`,
+    );
+
+    throw new Error(CONSTANTS.INSUFFICIENT_DETAIL_KEY);
+  }
+
+  context.log("🚀 Optimizing user prompt...");
 
   const chatCompletion = await openai.chat.completions.create({
     model: CONSTANTS.OPENAI_GPT_MODEL,
     messages: [
-      {
-        role: "system",
-        content: UserPromptOptimizerPrompt.replace("{rawPrompt}", rawPrompt),
-      },
+      { role: "system", content: UserPromptOptimizerPrompt.trim() },
+      { role: "user", content: rawPrompt.trim() },
     ],
     max_completion_tokens: CONSTANTS.MAX_COMPLETION_TOKENS,
-    temperature: CONSTANTS.TEMPERATURE,
+    reasoning_effort: "medium",
   });
 
   const rawOptimizedPrompt =
     chatCompletion.choices[0].message.content?.trim() ?? "";
 
   const optimizedPrompt = capitalizeFirstChar(rawOptimizedPrompt);
-
-  if (optimizedPrompt === CONSTANTS.INSUFFICIENT_DETAIL_KEY) {
-    context.log(
-      `❌ Prompt deemed insufficient for optimization: "${rawPrompt}"`,
-    );
-
-    throw new Error(`${CONSTANTS.INSUFFICIENT_DETAIL_KEY}`);
-  }
 
   context.log(`✨ Optimized prompt: ${optimizedPrompt}`);
   return optimizedPrompt;
@@ -207,7 +220,7 @@ export async function createImage(
     const errorMessage =
       ttl !== null && ttl < CONSTANTS.SIX_HOURS_IN_SECONDS
         ? "Your credits are due to reset shortly. Please try again in a little while."
-        : "You have utilized all the free credits. Feel free to come back tomorrow same time.";
+        : "You have utilized all the free credits. Feel free to come back tomorrow.";
 
     return { status: 429, jsonBody: { error: errorMessage } };
   }
@@ -281,8 +294,7 @@ export async function createImage(
         context,
       );
 
-      // invalidate image cache
-      await redis.del(CONSTANTS.IMAGE_CACHE_KEY);
+      await invalidateImageListCache();
       context.log("✅ Invalidated image cache");
 
       return {
@@ -309,8 +321,7 @@ export async function createImage(
         blobHTTPHeaders: { blobContentType: "image/png" },
       });
 
-      // invalidate image cache
-      await redis.del(CONSTANTS.IMAGE_CACHE_KEY);
+      await invalidateImageListCache();
       context.log("✅ Invalidated image cache (fallback)");
 
       context.log("📤 Original image uploaded as fallback");
@@ -332,7 +343,8 @@ export async function createImage(
       return {
         status: 400,
         jsonBody: {
-          error: "Your prompt is too vague. Please provide more detail.",
+          error:
+            "Your prompt is too vague. Please provide more detail and try again.",
         },
       };
     }
