@@ -31,9 +31,6 @@ const Generator = () => {
     isValidating,
   } = useSWR("suggestion", () => getPromptSuggestion(fingerprint), {
     revalidateOnFocus: false,
-    onError: (err: Error) => {
-      toast.error(err.message);
-    },
   });
 
   const loading = isLoading || isValidating || isGenerating;
@@ -49,7 +46,6 @@ const Generator = () => {
     if (value.length <= maxChars) {
       setInput(value);
       setCharCount(value.length);
-
       setTimeout(adjustTextareaHeight, 0);
     }
   };
@@ -66,13 +62,8 @@ const Generator = () => {
     }
 
     const rawPrompt = useSuggestion ? suggestion : customPrompt;
+    const notification = toast.loading("Generating an image for you...");
 
-    const notification = toast.loading(
-      "Generating an image for you...",
-    );
-
-    setInput("");
-    setCharCount(0);
     setIsGenerating(true);
 
     try {
@@ -103,6 +94,9 @@ const Generator = () => {
         const error = await response.json();
         throw new Error(error.message ?? "Failed to generate image");
       }
+
+      setInput("");
+      setCharCount(0);
 
       toast.success("Your AI generated image is here!", {
         id: notification,
@@ -158,25 +152,37 @@ const Generator = () => {
           <div className="group relative">
             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-violet-500/10 to-purple-500/10 opacity-0 blur-xl transition-all duration-300 group-focus-within:opacity-100 group-focus-within:blur-sm" />
 
-            <div className="relative rounded-xl border-2 border-gray-200 bg-white shadow-md transition-all duration-300 focus-within:border-violet-400 focus-within:shadow-violet-100">
+            <div
+              className={`relative rounded-xl border-2 shadow-md transition-all duration-300 ${
+                loading
+                  ? "cursor-not-allowed border-gray-200 bg-gray-50"
+                  : "border-gray-200 bg-white focus-within:border-violet-400 focus-within:shadow-violet-100"
+              }`}
+            >
               <textarea
                 ref={textareaRef}
                 value={input}
                 onChange={(e) => handleInputChange(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="max-h-[120px] min-h-[60px] w-full resize-none rounded-xl bg-transparent px-4 pb-6 pt-4 text-base leading-relaxed placeholder-gray-400 outline-none transition-all duration-200 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-violet-300 focus:placeholder-gray-300 md:min-h-[120px] md:text-lg"
+                className={`max-h-[120px] min-h-[60px] w-full resize-none rounded-xl bg-transparent px-4 pb-6 pt-4 text-base leading-relaxed placeholder-gray-400 outline-none transition-colors duration-300 scrollbar-thin scrollbar-track-transparent md:min-h-[120px] md:text-lg ${
+                  loading
+                    ? "cursor-not-allowed text-gray-400 opacity-100 scrollbar-thumb-gray-300 [-webkit-text-fill-color:theme(colors.gray.400)]"
+                    : "text-gray-900 scrollbar-thumb-violet-300 focus:placeholder-gray-300"
+                }`}
                 placeholder="Describe the image you want to create..."
                 disabled={loading}
               />
 
-              <div className="absolute bottom-3 right-4 flex items-center space-x-2">
+              <div className="pointer-events-none absolute bottom-3 right-4 flex items-center space-x-2">
                 <span
                   className={`text-sm font-medium transition-colors duration-200 ${
-                    charCount > maxChars * 0.8
-                      ? charCount === maxChars
-                        ? "text-red-500"
-                        : "text-amber-500"
-                      : "text-gray-400"
+                    loading
+                      ? "text-gray-400"
+                      : charCount > maxChars * 0.8
+                        ? charCount === maxChars
+                          ? "text-red-500"
+                          : "text-amber-500"
+                        : "text-gray-400"
                   }`}
                 >
                   {charCount}/{maxChars}
@@ -236,7 +242,11 @@ const Generator = () => {
                   AI Suggestion
                 </h3>
 
-                <div className="break-words text-sm leading-relaxed text-violet-700">
+                <div
+                  className={`break-words text-sm leading-relaxed ${
+                    suggestion ? "text-violet-700" : "text-violet-400"
+                  }`}
+                >
                   {isValidating ? (
                     <div className="animate-pulse space-y-2 pt-1.5">
                       <div className="h-4 w-full rounded bg-violet-300" />
@@ -244,7 +254,7 @@ const Generator = () => {
                       <div className="h-4 w-5/6 rounded bg-violet-300 md:hidden" />
                     </div>
                   ) : (
-                    suggestion
+                    suggestion || "Couldn't load a suggestion."
                   )}
                 </div>
               </div>
@@ -253,9 +263,9 @@ const Generator = () => {
             <button
               type="button"
               onClick={() => submitPrompt(true)}
-              disabled={loading}
+              disabled={loading || !suggestion}
               className={`flex-shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
-                !loading
+                suggestion && !loading
                   ? "bg-violet-600 text-white shadow-sm hover:bg-violet-700"
                   : "cursor-not-allowed bg-gray-300 text-gray-500"
               }`}
