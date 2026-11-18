@@ -8,7 +8,14 @@ const Providers = ({ children }: PropsWithChildren) => {
   return (
     <FingerprintProvider>
       {children}
-      <Toaster position="bottom-center" />
+
+      <Toaster
+        position="bottom-center"
+        toastOptions={{
+          className: "[&>div:first-child]:mt-1",
+          style: { alignItems: "flex-start" },
+        }}
+      />
     </FingerprintProvider>
   );
 };
