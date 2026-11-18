@@ -12,7 +12,6 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
         <Providers>
           <Header />
           <Generator />
-
           {children}
         </Providers>
       </body>
