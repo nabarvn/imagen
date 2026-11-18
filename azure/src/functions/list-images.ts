@@ -5,17 +5,20 @@ import {
   InvocationContext,
 } from "@azure/functions";
 
-import { redis } from "../lib/redis";
 import { getSASToken } from "../lib/sas-token";
 import { IMAGE_SIZES } from "../lib/rendition";
 import { containerClient } from "../lib/storage";
-import { applyRateLimiter, rateLimiter } from "../lib/rate-limiter";
+
+import {
+  readImageListCache,
+  readImageListVersion,
+  writeImageListCacheIfCurrent,
+} from "../lib/catalog";
 
 const CONSTANTS = {
   DEFAULT_PAGE_LIMIT: 9,
   ORIGINAL_IMAGE_SUFFIX: "_original",
   DEFAULT_URL_PREFERENCE: ["_medium", "_large", "_small"],
-  IMAGE_CACHE_KEY: "images:all",
 };
 
 interface PaginationParams {
@@ -40,11 +43,6 @@ interface ClientImage {
   url?: string;
   availableSizes: ImageVariant[];
   timestamp: number;
-}
-
-interface CachedImageData {
-  allImages: ClientImage[];
-  totalBlobs: number;
 }
 
 function getPaginationParams(request: HttpRequest): PaginationParams {
@@ -88,7 +86,6 @@ function determineDefaultUrl(variants: ImageVariant[]): string | undefined {
 
 async function groupAndTransformBlobs(
   context: InvocationContext,
-  sasToken: string,
 ): Promise<{ allImages: ClientImage[]; totalBlobs: number }> {
   const accountName = process.env.STORAGE_ACCOUNT_NAME;
 
@@ -116,7 +113,7 @@ async function groupAndTransformBlobs(
     group.variants.push({
       filename: blob.name,
       suffix,
-      url: `https://${accountName}.blob.core.windows.net/images/${blob.name}?${sasToken}`,
+      url: `https://${accountName}.blob.core.windows.net/images/${blob.name}`,
     });
 
     blobGroups.set(baseName, group);
@@ -155,41 +152,55 @@ export async function listImages(
   request: HttpRequest,
   context: InvocationContext,
 ): Promise<HttpResponseInit> {
-  const rateLimitResponse = await applyRateLimiter(rateLimiter, request);
-  if (rateLimitResponse) return rateLimitResponse;
-
   try {
     const { page, limit } = getPaginationParams(request);
 
     let allImages: ClientImage[] = [];
     let totalBlobs = 0;
 
-    const cachedImagesData = await redis.get(CONSTANTS.IMAGE_CACHE_KEY);
+    const versionAtStart = await readImageListVersion();
+    const cachedImages = await readImageListCache<ClientImage>(versionAtStart);
 
-    if (typeof cachedImagesData === "string") {
+    if (cachedImages) {
       context.log("✅ Cache hit for image list");
-      const parsedData: CachedImageData = JSON.parse(cachedImagesData);
 
-      allImages = parsedData.allImages;
-      totalBlobs = parsedData.totalBlobs;
+      allImages = cachedImages.allImages;
+      totalBlobs = cachedImages.totalBlobs;
     } else {
       context.log("⏳ Cache miss for image list; fetching from storage");
-
-      const sasToken = await getSASToken();
-      const transformedBlobs = await groupAndTransformBlobs(context, sasToken);
+      const transformedBlobs = await groupAndTransformBlobs(context);
 
       allImages = transformedBlobs.allImages;
       totalBlobs = transformedBlobs.totalBlobs;
 
-      // cache the full, sorted list of images and the blob count
-      const dataToCache: CachedImageData = { allImages, totalBlobs };
-      await redis.set(CONSTANTS.IMAGE_CACHE_KEY, JSON.stringify(dataToCache));
+      const saved = await writeImageListCacheIfCurrent(
+        versionAtStart,
+        allImages,
+        totalBlobs,
+      );
+
+      if (!saved) {
+        context.log("Skipped image cache write; a newer upload finished first");
+      }
     }
 
     // apply pagination
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
-    const paginatedImages = allImages.slice(startIndex, endIndex);
+
+    const sasToken = await getSASToken();
+
+    const paginatedImages = allImages
+      .slice(startIndex, endIndex)
+      .map((img) => ({
+        ...img,
+        url: img.url ? `${img.url}?${sasToken}` : undefined,
+        availableSizes: img.availableSizes.map((variant) => ({
+          ...variant,
+          url: `${variant.url}?${sasToken}`,
+        })),
+      }));
+
     const hasMore = endIndex < allImages.length;
     const totalImages = allImages.length;
 
