@@ -39,6 +39,7 @@ const Header = () => {
             <Link
               href="https://gpt.nabarun.app"
               target="_blank"
+              rel="noopener"
               className="inline-flex h-[42px] items-center rounded-lg border border-violet-200 bg-violet-50 px-2 py-2 text-sm font-medium text-violet-700 transition-all duration-200 hover:border-violet-300 hover:bg-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 sm:pl-3 sm:pr-4"
             >
               <Image
@@ -56,6 +57,7 @@ const Header = () => {
             <Link
               href="https://git.new/imagen"
               target="_blank"
+              rel="noopener"
               className="inline-flex h-[42px] items-center rounded-lg bg-violet-600 px-3 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 sm:px-4"
             >
               <StarIcon className="h-5 w-5 fill-yellow-300 text-yellow-300 sm:mr-2" />
