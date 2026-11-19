@@ -29,7 +29,7 @@ const Image = ({ isFirst, delay = 0 }: ImageProps) => {
 
   return (
     <div
-      className={`aspect-h-1 aspect-w-1 relative cursor-help xl:aspect-h-7 xl:aspect-w-7 ${
+      className={`aspect-h-1 aspect-w-1 relative xl:aspect-h-7 xl:aspect-w-7 ${
         isFirst && "md:col-span-2 md:row-span-2"
       } overflow-hidden rounded-sm shadow-lg transition-transform duration-200 ease-in-out`}
       role="img"
