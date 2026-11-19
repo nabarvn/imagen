@@ -20,7 +20,7 @@ const Images = () => {
   const [isPrepending, setIsPrepending] = useState(false);
 
   const isLoadingRef = useRef(false);
-  const prependedImagesCountRef = useRef(0);
+  const didSeedListRef = useRef(false);
   const imagesContainerRef = useRef<HTMLDivElement>(null);
 
   // keep refs in sync with state
@@ -55,7 +55,6 @@ const Images = () => {
       if (isDuplicate) return;
 
       setIsPrepending(true);
-      prependedImagesCountRef.current += 1;
 
       // add to local state for optimistic update
       setAllImages((prev) => [newImage, ...prev]);
@@ -152,13 +151,15 @@ const Images = () => {
   }, [entry, hasMore, loadMore]);
 
   /*
-    Populate the initial image list from SWR data
+    Seed the gallery from the first page once. Later updates to that cached page, 
+    including a prepended image, must not replace pages already loaded.
   */
   useEffect(() => {
-    if (firstPageData) {
-      setAllImages(firstPageData.images ?? []);
-      setHasMore(firstPageData.pagination?.hasMore ?? true);
-    }
+    if (didSeedListRef.current || !firstPageData) return;
+    didSeedListRef.current = true;
+
+    setAllImages(firstPageData.images ?? []);
+    setHasMore(firstPageData.pagination?.hasMore ?? true);
   }, [firstPageData]);
 
   return (
@@ -178,7 +179,7 @@ const Images = () => {
                 <div
                   key={`${image.url}-${i}`}
                   ref={isLastImage ? observerRef : undefined}
-                  className={`aspect-h-1 aspect-w-1 relative cursor-help xl:aspect-h-7 xl:aspect-w-7 ${
+                  className={`cursor-prompt aspect-h-1 aspect-w-1 relative xl:aspect-h-7 xl:aspect-w-7 ${
                     i === 0 && "md:col-span-2 md:row-span-2"
                   } rounded-sm shadow-lg transition-transform duration-200 ease-in-out`}
                 >
