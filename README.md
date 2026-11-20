@@ -3,7 +3,7 @@
     <img src="./public/logo.png" alt="Logo" width="80" height="80">
   </a>
 
-  <h1 align="center">Imagen</h1>
+  <h3 align="center">Imagen</h3>
 
   <p align="center">
     Say hello to your creative side!
@@ -25,7 +25,7 @@
 
 <br />
 
-Ever wanted to create a picture just by describing it? That's what Imagen does. Just type out your idea, and GPT Image will generate an image for you. If you're drawing a blank, don't worry – you can use our intelligent prompt suggestions to get some inspiration and see what you can create.
+Imagen generates images from text using the OpenAI GPT Image model. Type in a prompt to create an image, or use the suggestion button if you need an idea. Every generated image is saved to a shared gallery.
 
 ## Architecture
 
@@ -36,7 +36,7 @@ graph TD
     User --> Frontend[Next.js Frontend];
     Frontend -- "API Requests" --> Backend[Azure Functions];
     Backend -- "Rate Limiting & Caching" --> Redis[Upstash Redis];
-    Backend -- "AI Models (GPT)" --> OpenAI[OpenAI API];
+    Backend -- "Decisions<br>+<br>Prompts&nbsp;&amp;&nbsp;Image&nbsp;Generation" --> OpenAI[OpenAI API];
     Backend -- "Image Upload" --> Storage[Azure Blob Storage];
     Storage -- "Serves Images" --> Frontend;
 
